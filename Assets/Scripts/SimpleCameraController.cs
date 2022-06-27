@@ -8,6 +8,7 @@ namespace UnityTemplateProjects
 {
     public class SimpleCameraController : MonoBehaviour
     {
+
         class CameraState
         {
             public float yaw;
@@ -30,7 +31,7 @@ namespace UnityTemplateProjects
             public void Translate(Vector3 translation)
             {
                 Vector3 rotatedTranslation = Quaternion.Euler(pitch, yaw, roll) * translation;
-
+                
                 x += rotatedTranslation.x;
                 y += rotatedTranslation.y;
                 z += rotatedTranslation.z;
@@ -78,6 +79,14 @@ namespace UnityTemplateProjects
 
         [Tooltip("Whether or not to invert our Y axis for mouse input to rotation.")]
         public bool invertY = false;
+
+        [Header("Interaction")]
+        [SerializeField] private bool canInteract = true;
+        [SerializeField] private Vector3 interactionRayPoint = default;
+        [SerializeField] private float interactionDistance = default;
+        [SerializeField] private LayerMask interactionLayer = default;
+        private Interactable currentInteractable; 
+
 
 #if ENABLE_INPUT_SYSTEM
         InputAction movementAction;
@@ -210,6 +219,8 @@ namespace UnityTemplateProjects
             {
                 translation *= 10.0f;
             }
+
+            // if we can interact 
             
             // Modify movement by a boost factor (defined in Inspector and modified in play mode through the mouse scroll wheel)
             boost += GetBoostFactor();
