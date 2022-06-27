@@ -8,6 +8,8 @@ namespace UnityTemplateProjects
 {
     public class SimpleCameraController : MonoBehaviour
     {
+        // find the FirstPersonCharacter camera object and assign it to the variable below  
+        public Camera FirstPersonCharacter = null; 
 
         class CameraState
         {
@@ -85,6 +87,7 @@ namespace UnityTemplateProjects
         [SerializeField] private Vector3 interactionRayPoint = default;
         [SerializeField] private float interactionDistance = default;
         [SerializeField] private LayerMask interactionLayer = default;
+        [SerializeField] private KeyCode interactKey = KeyCode.Mouse0;
         private Interactable currentInteractable; 
 
 
@@ -127,6 +130,8 @@ namespace UnityTemplateProjects
             lookAction.Enable();
             verticalMovementAction.Enable();
             boostFactorAction.Enable();
+
+            FirstPersonCharacter = GameObject.Find("FirstPersonCharacter").GetComponent<Camera>();
         }
 #endif
 
@@ -173,6 +178,28 @@ namespace UnityTemplateProjects
             return direction;
         }
         
+        private void HandleInteractionCheck() {
+            if (Physics.Raycast(FirstPersonCharacter.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance)) {
+                if (hit.collider.gameObject.layer == 6 && (currentInteractable == null || hit.collider.gameObject.GetInstanceID() != currentInteractable.gameObject.GetInstanceID())) {
+                    hit.collider.TryGetComponent(out currentInteractable); 
+
+                    if (currentInteractable != null) {
+                        currentInteractable.OnFocus();
+                    }
+                }
+            }
+            else if (currentInteractable)
+            {
+                currentInteractable.OnLoseFocus();
+                currentInteractable = null;
+            }
+        }
+
+        private void HandleInteractionInput() {
+            if (currentInteractable != null && Input.GetKeyDown(interactKey) && Physics.Raycast(FirstPersonCharacter.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance, interactionLayer)) {
+                currentInteractable.OnInteract(); 
+            }
+        }
         void Update()
         {
             // Exit Sample  
@@ -221,6 +248,11 @@ namespace UnityTemplateProjects
             }
 
             // if we can interact 
+            if (canInteract) {
+                Debug.Log("does this work");
+                HandleInteractionCheck();
+                HandleInteractionInput(); 
+            }
             
             // Modify movement by a boost factor (defined in Inspector and modified in play mode through the mouse scroll wheel)
             boost += GetBoostFactor();

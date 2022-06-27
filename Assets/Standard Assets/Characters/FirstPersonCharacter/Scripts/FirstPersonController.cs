@@ -43,6 +43,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
+        [Header("Interaction")]
+        [SerializeField] private bool canInteract = true;
+        [SerializeField] private Vector3 interactionRayPoint = default;
+        [SerializeField] private float interactionDistance = default;
+        [SerializeField] private LayerMask interactionLayer = default;
+        [SerializeField] private KeyCode interactKey = KeyCode.Mouse0;
+        private Interactable currentInteractable; 
+
         // Use this for initialization
         private void Start()
         {
@@ -58,6 +66,28 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			m_MouseLook.Init(transform , m_Camera.transform);
         }
 
+        private void HandleInteractionCheck() {
+            if (Physics.Raycast(m_Camera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance)) {
+                if (hit.collider.gameObject.layer == 6 && (currentInteractable == null || hit.collider.gameObject.GetInstanceID() != currentInteractable.gameObject.GetInstanceID())) {
+                    hit.collider.TryGetComponent(out currentInteractable); 
+
+                    if (currentInteractable != null) {
+                        currentInteractable.OnFocus();
+                    }
+                }
+            }
+            else if (currentInteractable)
+            {
+                currentInteractable.OnLoseFocus();
+                currentInteractable = null;
+            }
+        }
+
+        private void HandleInteractionInput() {
+            if (currentInteractable != null && Input.GetKeyDown(interactKey) && Physics.Raycast(m_Camera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance, interactionLayer)) {
+                currentInteractable.OnInteract(); 
+            }
+        }
 
         // Update is called once per frame
         private void Update()
@@ -80,6 +110,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 m_MoveDir.y = 0f;
             }
+
+            // if we can interact 
+            if (canInteract) {
+                HandleInteractionCheck();
+                HandleInteractionInput(); 
+            }
+            
 
             m_PreviouslyGrounded = m_CharacterController.isGrounded;
         }

@@ -654,6 +654,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be76e5f14cfee674cb30b491fb72b09b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FirstPersonCharacter: {fileID: 0}
   boost: 3.5
   positionLerpTime: 0.2
   mouseSensitivity: 60
@@ -683,6 +684,13 @@ MonoBehaviour:
     m_RotationOrder: 4
   rotationLerpTime: 0.01
   invertY: 0
+  canInteract: 1
+  interactionRayPoint: {x: 0, y: 0, z: 0}
+  interactionDistance: 0
+  interactionLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  interactKey: 323
 --- !u!20 &1687258584
 Camera:
   m_ObjectHideFlags: 0
